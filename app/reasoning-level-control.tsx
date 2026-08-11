@@ -5,7 +5,10 @@ import { useEffect, useMemo, useState } from "react";
 type ReasoningEffort = "low" | "medium" | "high";
 
 const STORAGE_KEY = "cds_reasoning_effort";
-const GENERATION_PATHS = new Set(["/api/generate", "/api/generate-las"]);
+const PREVIEW_ROUTES: Record<string, string> = {
+  "/api/generate": "/api/preview/generate",
+  "/api/generate-las": "/api/preview/generate-las"
+};
 
 const effortCopy: Record<ReasoningEffort, { label: string; helper: string }> = {
   low: {
@@ -59,15 +62,12 @@ export default function ReasoningLevelControl() {
     const reasoningFetch: typeof window.fetch = async (input, init) => {
       const method = (init?.method || (input instanceof Request ? input.method : "GET")).toUpperCase();
       const path = requestPath(input);
+      const previewRoute = PREVIEW_ROUTES[path];
 
-      if (
-        method === "POST" &&
-        GENERATION_PATHS.has(path) &&
-        typeof init?.body === "string"
-      ) {
+      if (method === "POST" && previewRoute && typeof init?.body === "string") {
         try {
           const payload = JSON.parse(init.body) as Record<string, unknown>;
-          return originalFetch(input, {
+          return originalFetch(previewRoute, {
             ...init,
             body: JSON.stringify({ ...payload, reasoningEffort: effort })
           });
@@ -98,7 +98,7 @@ export default function ReasoningLevelControl() {
         right: 18,
         bottom: 18,
         zIndex: 1200,
-        width: 248,
+        width: 258,
         border: "1px solid rgba(15, 23, 42, 0.14)",
         borderRadius: 16,
         padding: 14,
@@ -111,7 +111,7 @@ export default function ReasoningLevelControl() {
         <div>
           <strong style={{ display: "block", fontSize: 13 }}>AI Thinking</strong>
           <span style={{ display: "block", marginTop: 2, fontSize: 11, color: "#64748b" }}>
-            OpenAI + Gemini
+            Preview planner · OpenAI + Gemini
           </span>
         </div>
         <select
