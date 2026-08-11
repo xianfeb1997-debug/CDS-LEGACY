@@ -1,0 +1,51 @@
+name: Apply source parser fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/apply-source-parser-fix.yml
+      - .github/source-file-browser-parser-fix.patch
+
+permissions:
+  contents: write
+
+concurrency:
+  group: apply-source-parser-fix
+  cancel-in-progress: false
+
+jobs:
+  apply-fix:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Apply browser parser patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git apply --check .github/source-file-browser-parser-fix.patch
+          git apply .github/source-file-browser-parser-fix.patch
+
+      - name: Validate patched source syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run typecheck
+
+      - name: Commit patched files and remove temporary helper
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -f .github/source-file-browser-parser-fix.patch
+          rm -f .github/workflows/apply-source-parser-fix.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Parse source files locally in browser"
+          git push origin HEAD:main
