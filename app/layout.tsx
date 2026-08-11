@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import SourceParserBridge from "./source-parser-bridge";
+import ReasoningLevelControl from "./reasoning-level-control";
 
 export const metadata: Metadata = {
   title: "Learning Design Studio",
@@ -17,6 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <SourceParserBridge />
+        <ReasoningLevelControl />
         {children}
       </body>
     </html>
