@@ -669,10 +669,10 @@ export default function Home() {
   const gammaPollStopRef = useRef(false);
   const activeGeneratorRef = useRef<PreviewTab | null>(null);
 
-  function authHeaders() {
-    const storedKey = window.sessionStorage.getItem("ilaw_access_key") || "";
-    return storedKey ? { "X-ILAW-Access-Key": storedKey } : {};
-  }
+  function authHeaders(): Record<string, string> {
+  const storedKey = window.sessionStorage.getItem("ilaw_access_key") || "";
+  return storedKey ? { "X-ILAW-Access-Key": storedKey } : {};
+}
 
   async function refreshApiUsage() {
     setUsageLoading(true);
