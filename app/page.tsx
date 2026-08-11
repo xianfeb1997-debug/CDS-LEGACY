@@ -2365,7 +2365,7 @@ function LandingPage({
           <a href="#about">About</a>
           <a href="#features">Features</a>
           <a href="#how-it-works">How it works</a>
-          <a href="#inside">What's inside</a>
+          <a href="#inside">What&apos;s inside</a>
           <a href="#contact">Contact</a>
         </nav>
         <div className="site-nav-actions">
