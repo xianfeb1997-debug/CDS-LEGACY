@@ -250,9 +250,10 @@ export function getDatabaseClient() {
     sqlClient = postgres(connectionString, {
       ssl: "require",
       prepare: false,
-      max: 2,
-      idle_timeout: 20,
-      connect_timeout: 15
+      max: 1,
+      idle_timeout: 10,
+      connect_timeout: 10,
+      fetch_types: false
     });
   }
   return sqlClient;
