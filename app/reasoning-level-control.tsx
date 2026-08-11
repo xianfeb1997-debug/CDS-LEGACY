@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 
 type ReasoningEffort = "low" | "medium" | "high";
 
@@ -46,6 +47,7 @@ function isReasoningEffort(value: string | null): value is ReasoningEffort {
 
 export default function ReasoningLevelControl() {
   const [effort, setEffort] = useState<ReasoningEffort>("medium");
+  const [formTarget, setFormTarget] = useState<HTMLElement | null>(null);
 
   useEffect(() => {
     const stored = window.localStorage.getItem(STORAGE_KEY);
@@ -55,6 +57,23 @@ export default function ReasoningLevelControl() {
   useEffect(() => {
     window.localStorage.setItem(STORAGE_KEY, effort);
   }, [effort]);
+
+  useEffect(() => {
+    const locateTarget = () => {
+      const target = document.querySelector<HTMLElement>(".duration-detail-row");
+      if (target) setFormTarget(target);
+      return Boolean(target);
+    };
+
+    if (locateTarget()) return;
+
+    const observer = new MutationObserver(() => {
+      if (locateTarget()) observer.disconnect();
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const originalFetch = window.fetch.bind(window);
@@ -90,52 +109,25 @@ export default function ReasoningLevelControl() {
 
   const helper = useMemo(() => effortCopy[effort].helper, [effort]);
 
-  return (
-    <aside
-      aria-label="AI thinking level"
-      style={{
-        position: "fixed",
-        right: 18,
-        bottom: 18,
-        zIndex: 1200,
-        width: 258,
-        border: "1px solid rgba(15, 23, 42, 0.14)",
-        borderRadius: 16,
-        padding: 14,
-        background: "rgba(255, 255, 255, 0.96)",
-        boxShadow: "0 12px 32px rgba(15, 23, 42, 0.16)",
-        backdropFilter: "blur(10px)"
-      }}
-    >
-      <div style={{ display: "flex", justifyContent: "space-between", gap: 10, alignItems: "center" }}>
-        <div>
-          <strong style={{ display: "block", fontSize: 13 }}>AI Thinking</strong>
-          <span style={{ display: "block", marginTop: 2, fontSize: 11, color: "#64748b" }}>
-            Preview planner · OpenAI + Gemini
-          </span>
-        </div>
-        <select
-          aria-label="AI thinking level"
-          value={effort}
-          onChange={(event) => setEffort(event.target.value as ReasoningEffort)}
-          style={{
-            minWidth: 100,
-            border: "1px solid #cbd5e1",
-            borderRadius: 10,
-            padding: "7px 9px",
-            background: "white",
-            fontSize: 12,
-            fontWeight: 700
-          }}
-        >
-          <option value="low">Low</option>
-          <option value="medium">Medium</option>
-          <option value="high">High</option>
-        </select>
-      </div>
-      <p style={{ margin: "9px 0 0", fontSize: 11, lineHeight: 1.45, color: "#475569" }}>
-        {helper}
+  if (!formTarget) return null;
+
+  return createPortal(
+    <div className="field" style={{ gridColumn: "1 / -1" }}>
+      <label htmlFor="ai-thinking-level">AI Thinking</label>
+      <select
+        id="ai-thinking-level"
+        aria-label="AI thinking level"
+        value={effort}
+        onChange={(event) => setEffort(event.target.value as ReasoningEffort)}
+      >
+        <option value="low">Low - faster</option>
+        <option value="medium">Medium - recommended</option>
+        <option value="high">High - deeper reasoning</option>
+      </select>
+      <p className="field-help" style={{ marginTop: 6 }}>
+        {helper} Applies to Lesson Plan and Activity Sheet generation for supported OpenAI and Gemini models.
       </p>
-    </aside>
+    </div>,
+    formTarget
   );
 }
