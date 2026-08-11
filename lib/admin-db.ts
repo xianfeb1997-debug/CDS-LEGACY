@@ -442,12 +442,25 @@ export async function updateGlobalSettings(input: z.infer<typeof GlobalSettingsI
 export async function listAdminData() {
   await ensureAdminSchema();
   const sql = getDatabaseClient();
-  const [userRows, textRows, gammaRows, settings] = await Promise.all([
-    sql`select * from ilaw_user_keys order by created_at desc, id desc`,
-    sql`select * from ilaw_text_api_keys order by is_active desc, priority asc, use_count asc, id asc`,
-    sql`select * from ilaw_gamma_api_keys order by is_active desc, priority asc, use_count asc, id asc`,
-    getGlobalSettings()
-  ]);
+  const userRows = await sql`
+  select *
+  from ilaw_user_keys
+  order by created_at desc, id desc
+`;
+
+const textRows = await sql`
+  select *
+  from ilaw_text_api_keys
+  order by is_active desc, priority asc, use_count asc, id asc
+`;
+
+const gammaRows = await sql`
+  select *
+  from ilaw_gamma_api_keys
+  order by is_active desc, priority asc, use_count asc, id asc
+`;
+
+const settings = await getGlobalSettings();
   const users = userRows.map((row) => mapUser(row as Record<string, unknown>));
   const textApiKeys = textRows.map((row) => mapTextApiKey(row as Record<string, unknown>));
   const gammaApiKeys = gammaRows.map((row) => mapGammaApiKey(row as Record<string, unknown>));
