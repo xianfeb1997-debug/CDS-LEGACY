@@ -7,6 +7,7 @@ This deployment-ready edition uses **Supabase Postgres** for users, authenticati
 ## Main features
 
 - Lesson plan, LAS, and PPT generation.
+- GAD integration in every selected session, with teacher context, shared participation roles, fair assessment, and aligned LAS/PPT instructions (see [GAD integration](docs/GAD_INTEGRATION.md)).
 - Email/password signup with OTP verification.
 - Optional Google OAuth sign-in.
 - Hidden `/admin` panel protected by `ILAW_ADMIN_KEY`.

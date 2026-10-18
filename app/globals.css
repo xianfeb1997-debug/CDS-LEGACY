@@ -8818,3 +8818,51 @@ body {
   82% { opacity: .7; }
   94% { transform: translateX(120%); opacity: .0; }
 }
+
+.gad-settings {
+  min-width: 0;
+  margin: 4px 0 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--brand-soft);
+}
+.gad-settings legend {
+  padding: 0 6px;
+  font-size: 14px;
+  font-weight: 750;
+  color: var(--brand);
+}
+.gad-settings .gad-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.gad-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  min-height: 0;
+  margin: 0;
+  flex: 0 0 18px;
+  accent-color: var(--brand);
+}
+.gad-settings .field-help {
+  margin: 10px 0;
+  line-height: 1.5;
+}
+.gad-policy-link {
+  color: var(--brand);
+  font-size: 12px;
+  line-height: 1.5;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
+}
+.gad-focus-field {
+  margin-top: 14px;
+}
+.gad-settings:disabled {
+  opacity: .65;
+}

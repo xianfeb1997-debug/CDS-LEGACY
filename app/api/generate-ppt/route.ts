@@ -12,6 +12,7 @@ import { generateGammaPresentation } from "@/lib/gamma";
 import { GeneratedLessonSchema, LessonInputSchema } from "@/lib/schemas";
 import { accessKeyFromRequest } from "@/lib/admin-auth";
 import { chargeUserTextCredit, resolveGenerationProvider } from "@/lib/generation-auth";
+import { applyGadToLesson } from "@/lib/gad";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -44,7 +45,7 @@ export async function POST(request: Request) {
     assertUserPptCreditsAvailable(user);
 
     const generated = payload.lesson ? null : await generateLesson(payload, textProvider!);
-    const lesson = payload.lesson || generated!.lesson;
+    const lesson = applyGadToLesson(payload, payload.lesson || generated!.lesson);
 
     if (generated?.usedAI && textProvider) {
       await chargeUserTextCredit(textProvider);

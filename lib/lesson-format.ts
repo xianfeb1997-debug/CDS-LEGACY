@@ -19,6 +19,7 @@ function canonicalIntegrationLabel(label: string) {
   if (normalized === "values education") return "Values Education";
   if (normalized === "literacy") return "Literacy";
   if (normalized === "numeracy") return "Numeracy";
+  if (normalized === "gad" || normalized === "gender and development (gad)") return "GAD";
   if (normalized === "related learning areas") return "Related Learning Areas";
   return "Related Learning Area";
 }
@@ -30,7 +31,7 @@ export function formatIntegrationText(value: string) {
   return text
     .replace(/[ \t\r\n]+/g, " ")
     .replace(
-      /\b(ICT|Values Education|Literacy|Numeracy|Related Learning Areas?)\s*:/gi,
+      /\b(ICT|Values Education|Literacy|Numeracy|Related Learning Areas?|Gender and Development \(GAD\)|GAD)\s*:/gi,
       (match, label: string, offset: number) =>
         `${offset === 0 ? "" : "\n"}${canonicalIntegrationLabel(label)}:`
     )

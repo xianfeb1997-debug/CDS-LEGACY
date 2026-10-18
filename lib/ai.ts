@@ -10,6 +10,7 @@ import {
 } from "./schemas";
 import { OFFICIAL_TEMPLATE_NARRATIVES } from "./template-constants";
 import { normalizeSessionDurationMinutes, stripObjectiveTiming } from "./lesson-format";
+import { applyGadToLesson, gadInstructions } from "./gad";
 
 type GenerationResult = {
   lesson: GeneratedLesson;
@@ -105,7 +106,7 @@ Important professional constraints:
 - Every objective, activity, assessment, resource, integration, extended learning task, and reflection prompt must align with the teacher-provided competency, content standard, performance standard, topic, grade level, learning area, term, week, and teaching dates.
 - Activities must promote active participation, collaboration, prior-knowledge connections, differentiation for diverse learners, critical thinking, and reflection.
 - Keep each table cell classroom-ready, compact, and professional.
-- References must come only from uploaded source filenames or teacher-provided explicit references. If no upload/reference is provided, leave the References field blank. Do not generate references from general model knowledge.
+- References must come only from uploaded source filenames, teacher-provided explicit references, or the application's verified GAD policy reference when GAD integration is enabled. Otherwise leave References blank. Do not generate references from general model knowledge.
 
 Language rule: write in the selected language. If Bilingual, use professional English with natural Filipino support terms where appropriate.`;
 
@@ -203,7 +204,7 @@ function buildUserPrompt(input: LessonInput) {
   };
   const sourceInstruction = uploadedSources
     ? "- Uploaded full readable source text is provided and must be used as a source for content generation. Use relevant uploaded-source examples, activities, vocabulary, formulas, tables, lesson sections, assessment items, and resource suggestions when they align with the teacher-entered competency and standards. Do not ignore the uploaded source. Teacher-entered competency and standards remain authoritative if anything conflicts. If a source must be named in a lesson content cell, use only the generic source label such as Source 1 or Source 2. Do not write uploaded filenames in lesson content cells; filenames belong only in the References field."
-    : "- No uploaded source text or explicit references were provided. Leave the References field blank. Do not invent or add citations, editions, page numbers, source titles, or URLs.";
+    : "- No uploaded source text or explicit references were provided. References must be blank except for the application's supplied GAD policy reference when enabled. Do not invent citations, editions, page numbers, source titles, or URLs.";
   const sourceBlock = uploadedSources
     ? `\n\nUploaded full readable source text for supporting reference:\n${uploadedSources}`
     : "";
@@ -215,11 +216,12 @@ Mandatory requirements:
 - Each selected session is ${durationMinutes} minutes. The app will display this in the day/session header as Day 1 (${durationMinutes}m), Day 2 (${durationMinutes}m), and so on. Use the duration to keep objectives and activities achievable, but do not write minute/session timing phrases inside the objective text.
 - ${depthInstruction(input.outputDepth)}
 ${sourceInstruction}
+${gadInstructions(input, "lesson")}
 - Treat the following form inputs as authoritative official curriculum information. Do not request additional files or source text.
 - Use the exact Learning Competency, Content Standard, and Performance Standard from the form. Do not replace them with a generic topic. When the Topic / Lesson field is blank, infer a title from the competency, but still design the lesson from the full competency and standards.
 - If uploaded source text is provided, ground the lesson content in the relevant source text. Use source-based examples/resources/activities where useful and label them generically as Source 1, Source 2, etc. Do not use uploaded source text only for the References row.
 - Run these internal design passes before writing JSON: source/filter check; KSA unpacking; Revised Bloom progression; one SMART objective per selected day/session; I Do-We Do-You Do flow; assessment evidence and feedback; inclusion/accommodations; ways forward; final alignment check against the competency and standards.
-- References must be blank unless actual uploaded filenames or teacher-provided explicit references are available.
+- References must be blank unless actual uploaded filenames, teacher-provided explicit references, or the application's enabled GAD policy reference are available.
 - If Topic / Lesson is blank, generate a concise lesson title from the learning competency, learning area, and standards.
 - Restate the Learning Competency clearly in the Intentions section.
 - Create one measurable SMART objective for each selected session/day. Use one objective only per day unless the teacher selected Comprehensive output, where supporting sub-objectives may be added. In the JSON array, write objectives as short observable action phrases, not repeated full stems. Do not start every item with "By the end of Day..." or "learners will be able to...". Do not include phrases such as "within the ${durationMinutes}-minute session"; timing belongs only in the day/session header.
@@ -545,7 +547,7 @@ function normalizeGeneratedLesson(input: LessonInput, lesson: RawGeneratedLesson
     sessions
   };
 
-  return GeneratedLessonSchema.parse(normalizedLesson);
+  return GeneratedLessonSchema.parse(applyGadToLesson(input, normalizedLesson));
 }
 
 async function generateWithResponses(client: OpenAI, model: string, input: LessonInput) {

@@ -1,4 +1,5 @@
 import type { GeneratedLesson, LessonInput } from "./schemas";
+import { gadInstructions } from "./gad";
 import type { ResolvedGammaProvider } from "./admin-db";
 import { saveGammaCreditState } from "./gamma-credits";
 
@@ -233,8 +234,10 @@ Session Objectives:
 ${bulletList(session.learningObjectives, "Use the approved learning objective from the lesson plan.")}
 Pre-Lesson: ${session.preLesson}
 Flow: ${session.flow.join(" | ")}
+Opportunities for integration: ${session.integration}
 Assessment: ${session.formativeAssessment.join(" | ")}
-Extended Learning: ${session.extendedLearning}`
+Extended Learning: ${session.extendedLearning}
+Teacher reflection prompt (adapt to a learner-facing reflection without inventing results): ${session.reflectionPrompt}`
     )
     .join("\n\n");
 }
@@ -310,6 +313,7 @@ ${sessionObjectivesBlock(lesson)}
 ${sessionDeckPlan(lesson, selectedPageCount)}
 
 Required deck design:
+${gadInstructions(input, "presentation")}
 - Use a clean, professional, modern education design.
 - Make it easy to visualize with large readable fonts.
 - Use visual aids, icons, graphics, diagrams, formula cards, comparison cards, arrows, and simple tables.
