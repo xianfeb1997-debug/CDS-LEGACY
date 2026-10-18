@@ -19,6 +19,7 @@ import {
 import { z } from "zod";
 import { extractJsonObject, getResponseText } from "./json";
 import type { GeneratedLesson, LessonInput } from "./schemas";
+import { gadEnabled, gadInstructions, gadSessionSupport, GAD_POLICY_REFERENCE } from "./gad";
 
 const FONT_FACE = "Aptos";
 const HEADER_OLD_ENGLISH_FONT = "Old English Text MT";
@@ -633,6 +634,7 @@ function buildLasPrompt(input: LessonInput, lesson: GeneratedLesson) {
   return `Create a complete Learning Activity Sheet package in JSON.
 
 Required document behavior:
+${gadInstructions(input, "las")}
 - Generate exactly ${sessionCount} LAS sessions in one output.
 - Each LAS must correspond to the matching lesson-plan session.
 - Follow the template sections: Objectives, Let Us Learn, Let Us Try, Let Us Do, Let Us Apply, Rubrics, References.
@@ -652,7 +654,7 @@ Required document behavior:
 - Let Us Do must provide independent practice or individual/small-group learning tasks aligned to the same objectives, not just fixed numbered word problems.
 - Let Us Apply must be an authentic performance task with a realistic scenario, clear output, and directions.
 - Rubrics must assess the expected output for the subject and performance standard. Do not use computation criteria unless computation is part of the lesson.
-- Include only references that came from teacher-provided references, uploaded source names, or the generated lesson plan.
+- Include only references that came from teacher-provided references, uploaded source names, the generated lesson plan, or the application's supplied GAD policy reference when enabled.
 - Return only valid JSON.
 
 JSON shape:
@@ -868,7 +870,14 @@ function normalizeGeneratedLAS(input: LessonInput, lesson: GeneratedLesson, raw:
       3,
       6
     );
+    if (gadEnabled(input) && !instructions.some((item) => item.includes("GAD Participation:"))) {
+      instructions[0] += `\nGAD Participation: ${gadSessionSupport(input, index).participation}`;
+    }
     const references = boundedItems(cleanArray(rawSession.references, safeReferences), (itemIndex) => safeReferences[itemIndex % safeReferences.length], 1, 8);
+    if (gadEnabled(input) && !references.some((item) => item.includes("Gender-Responsive Basic Education Policy"))) {
+      if (references.length === 8) references[7] += `\n${GAD_POLICY_REFERENCE}`;
+      else references.push(GAD_POLICY_REFERENCE);
+    }
 
     return {
       sessionNumber: index + 1,

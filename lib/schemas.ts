@@ -45,6 +45,8 @@ export const LessonInputSchema = z.object({
   learnerContext: z.string().optional().default(""),
   resourceNotes: z.string().optional().default(""),
   integrationNotes: z.string().optional().default(""),
+  gadIntegrationEnabled: z.boolean().optional().default(true),
+  gadFocusNotes: z.string().max(2000).optional().default(""),
   assessmentNotes: z.string().optional().default(""),
   waysForwardNotes: z.string().optional().default("")
 });
@@ -128,6 +130,8 @@ export const defaultInput: LessonInput = {
   learnerContext: "",
   resourceNotes: "",
   integrationNotes: "",
+  gadIntegrationEnabled: true,
+  gadFocusNotes: "",
   assessmentNotes: "",
   waysForwardNotes: ""
 };

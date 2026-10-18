@@ -43,6 +43,7 @@ import {
   type SessionPlan
 } from "@/lib/schemas";
 import { cleanObjectiveText, formatIntegrationText, formatSessionHeaderLabel } from "@/lib/lesson-format";
+import { GAD_POLICY_TITLE, GAD_POLICY_URL } from "@/lib/gad";
 import { OFFICIAL_TEMPLATE_HELPERS, OFFICIAL_TEMPLATE_NARRATIVES, SELF_CHECK_RUBRIC_TITLE } from "@/lib/template-constants";
 
 type SelectOption = string | { value: string; label: string };
@@ -479,7 +480,7 @@ function formatNumber(value: number | null | undefined) {
   return value.toLocaleString();
 }
 
-type FieldValue = string | number;
+type FieldValue = string | number | boolean;
 
 type RequiredFieldKey =
   | "gradeLevelSection"
@@ -875,6 +876,22 @@ export default function Home() {
       ...current,
       [name]: value
     }));
+
+    if ((name === "gadIntegrationEnabled" || name === "gadFocusNotes") && generatedLesson) {
+      setGeneratedBlob(null);
+      setGeneratedLesson(null);
+      setGeneratedLasBlob(null);
+      setGeneratedLasFilename("");
+      setGeneratedPptExportUrl("");
+      setGeneratedPptGammaUrl("");
+      setPendingGammaGenerationId("");
+      setShowPreview(false);
+      gammaPollStopRef.current = true;
+      clearGammaPollTimer();
+      setIsAutoPollingPPT(false);
+      setStatusTone("success");
+      setStatus("GAD settings changed. Generate the Lesson Plan again to align the LAS and Presentation with the updated plan.");
+    }
 
     if (isRequiredFieldKey(name)) {
       setValidationErrors((current) => {
@@ -1734,6 +1751,39 @@ export default function Home() {
                       placeholder="Paste the performance standard here."
                       error={validationErrors.performanceStandard}
                     />
+
+                    <fieldset className="gad-settings" disabled={isBusy}>
+                      <legend>Gender and Development (GAD)</legend>
+                      <label className="gad-toggle" htmlFor="gad-integration-enabled">
+                        <input
+                          id="gad-integration-enabled"
+                          type="checkbox"
+                          checked={form.gadIntegrationEnabled}
+                          onChange={(event) => updateField("gadIntegrationEnabled", event.target.checked)}
+                          aria-describedby="gad-integration-help"
+                        />
+                        <span>Integrate GAD in every session</span>
+                      </label>
+                      <p id="gad-integration-help" className="field-help">
+                        Carry fair participation, shared roles, gender-fair examples, and equitable assessment into the lesson plan, activity sheets, and slides. Your ILAW template and curriculum competencies stay intact.
+                      </p>
+                      <a className="gad-policy-link" href={GAD_POLICY_URL} target="_blank" rel="noreferrer">{GAD_POLICY_TITLE}</a>
+                      {form.gadIntegrationEnabled ? (
+                        <div className="field gad-focus-field">
+                          <label htmlFor="gad-focus-notes">GAD focus / classroom context (optional)</label>
+                          <textarea
+                            id="gad-focus-notes"
+                            value={form.gadFocusNotes}
+                            maxLength={2000}
+                            onChange={(event) => updateField("gadFocusNotes", event.target.value)}
+                            placeholder="e.g. For residential measurement, rotate measuring, drawing, computing, and reporting roles; show household planning as a shared responsibility."
+                          />
+                          <p className="field-help">Describe the learning context without learner names or sensitive personal information. Review the generated activities before classroom use.</p>
+                        </div>
+                      ) : (
+                        <p className="field-help">Explicit GAD activities are off. Materials still use respectful, inclusive language.</p>
+                      )}
+                    </fieldset>
 
                     <div className="source-upload" ref={sourceUploadRef}>
                       <div className="source-upload-header">

@@ -1,6 +1,7 @@
 import type { GeneratedLesson, LessonInput, SessionPlan } from "./schemas";
 import { OFFICIAL_TEMPLATE_NARRATIVES } from "./template-constants";
 import { normalizeSessionDurationMinutes, stripObjectiveTiming } from "./lesson-format";
+import { applyGadToLesson } from "./gad";
 
 function splitLines(value: string, fallback: string[]) {
   const lines = value
@@ -211,7 +212,7 @@ export function buildFallbackLesson(input: LessonInput): GeneratedLesson {
     };
   });
 
-  return {
+  return applyGadToLesson(input, {
     title,
     learningArea: input.learningArea,
     teacherName: input.teacherName,
@@ -236,5 +237,5 @@ export function buildFallbackLesson(input: LessonInput): GeneratedLesson {
     assessmentNarrative: OFFICIAL_TEMPLATE_NARRATIVES.assessment,
     waysForwardNarrative: OFFICIAL_TEMPLATE_NARRATIVES.waysForward,
     sessions
-  };
+  });
 }

@@ -4,6 +4,7 @@ import { buildLASFileName, generateLAS, packLASDocx } from "@/lib/las";
 import { GeneratedLessonSchema, LessonInputSchema } from "@/lib/schemas";
 import { incrementGlobalUsageCounter, readGlobalUsageCounter } from "@/lib/global-usage";
 import { chargeUserTextCredit, resolveGenerationProvider } from "@/lib/generation-auth";
+import { applyGadToLesson } from "@/lib/gad";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -73,7 +74,7 @@ export async function POST(request: Request) {
     }
 
     const generated = payload.lesson ? null : await generateLesson(payload, provider);
-    const lesson = payload.lesson || generated!.lesson;
+    const lesson = applyGadToLesson(payload, payload.lesson || generated!.lesson);
 
     // Important: LAS must use the same resolved Admin/API-key provider as Lesson Plan generation.
     // This keeps per-user dedicated keys and global rotating keys working for LAS too.
